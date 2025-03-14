@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Backpack.tf - Bot Utilities
 // @namespace    https://github.com/Bonfire
-// @version      1.0.18
+// @version      1.0.19
 // @description  A script to provide various TF2Autobot utilities on backpack.tf
 // @author       Bon
 // @downloadURL  https://github.com/Bonfire/bptf-bot-utilities/raw/master/bptf-bot-utilities.user.js
@@ -203,7 +203,7 @@
             let priceIcon = document.createElement("i");
             priceIcon.className = "fa fa-tags";
 
-            let itemCommand = `!pricecheck sku=${itemSKU}`;
+            let itemCommand = `!getSnapshots sku=${itemSKU}`;
             $(pricecheckItemButton).data("itemCommand", itemCommand);
             $(priceIcon).data("itemCommand", itemCommand);
 
@@ -236,11 +236,11 @@
             if ($(hoveredItem).data("listing_intent") === "buy") {
               itemCommand = `!update sku=${itemSKU}${
                 keyPrice != null ? "&buy.keys=" + keyPrice : ""
-              }${metalPrice != null ? "&buy.metal=" + metalPrice : ""} `;
+              }${metalPrice != null ? "&buy.metal=" + metalPrice : ""}`;
             } else {
               itemCommand = `!update sku=${itemSKU}${
                 keyPrice != null ? "&sell.keys=" + keyPrice : ""
-              }${metalPrice != null ? "&sell.metal=" + metalPrice : ""} `;
+              }${metalPrice != null ? "&sell.metal=" + metalPrice : ""}`;
             }
 
             $(matchListingButton).data("itemCommand", itemCommand);
@@ -256,7 +256,34 @@
               );
             });
           }
+// Add the "Max" button
+if (
+  $(hoveredItem).data("listing_intent") === "buy" &&
+  !$("#max-price-button").length
+) {
+  let maxPriceButton = document.createElement("a");
+  maxPriceButton.id = "max-price-button";
+  maxPriceButton.className = "btn btn-default btn-xs";
+  maxPriceButton.textContent = " Max";
 
+  let maxIcon = document.createElement("i");
+  maxIcon.className = "fa fa-arrow-up";
+
+  let [keyPrice, metalPrice] = extractPrice($(hoveredItem));
+  let itemCommand = `!update sku=${itemSKU}${
+    keyPrice != null ? "&maxBuyPrice.keys=" + keyPrice : ""
+  }${metalPrice != null ? "&maxBuyPrice.metal=" + metalPrice : ""}`;
+
+  $(maxPriceButton).data("itemCommand", itemCommand);
+  $(maxIcon).data("itemCommand", itemCommand);
+
+  maxPriceButton.prepend(maxIcon);
+  $("#bot-utility-elements").append(maxPriceButton);
+
+  $("#max-price-button").on("click", (event) => {
+    GM_setClipboard($(event.target).data("itemCommand"), "text/plain");
+  });
+}
           clearInterval(addUtilitiesLoad);
         }, 50);
 
